@@ -1,0 +1,75 @@
+- hosts: terraform_ansible
+  tasks:
+    - name: Yum update
+      shell: 'sudo yum update -y'
+    - name: Instalando docker
+      yum: 
+        pkg: 
+        - docker 
+        update_cache: yes
+      become: yes  
+    - name: Membership do ec2-user
+      shell: 'sudo usermod -a -G docker ec2-user; id ec2-user'
+    - name: Docker service habilitado boot
+      shell: 'sudo systemctl enable docker.service'
+    - name: Iniciando docker service
+      shell: 'sudo systemctl start docker.service'  
+    - name: Puxando libs pro k8s
+      shell: 
+        cmd: |
+          cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+          enabled=1
+          gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+          exclude=kubelet kubeadm kubectl
+          EOF
+    - name: Yum update
+      shell: 'sudo yum update -y'
+    - name: Instalando k8s
+      shell: 'sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes'
+    - name: Habilitando kubelet
+      shell: 'sudo systemctl enable --now kubelet'
+    - name: Habilitando iptable
+      shell: 'echo "net.bridge.bridge-nf-call-iptables=1" | sudo tee -a /etc/sysctl.conf'
+    - name: Habilitando iptable
+      shell: 'sudo sysctl -p'
+    - name: Iniciando k8s
+      shell: 'sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-cert-extra-sans={{play_hosts[0]}} --ignore-preflight-errors=Mem'
+      when: inventory_hostname == play_hosts[0]
+      register: join_hash
+    - debug:
+          var: join_hash.stdout_lines
+    - name: Setando kubeconfig
+      shell: 'mkdir -p ~/.kube'
+      when: inventory_hostname == play_hosts[0]
+    - name: Setando kubeconfig
+      shell: 'sudo cp -i /etc/kubernetes/admin.conf .kube/config'
+      become: yes
+      when: inventory_hostname == play_hosts[0]
+    - name: Setando kubeconfig
+      shell: 'sudo chown $(id -u):$(id -g) .kube/config'
+      when: inventory_hostname == play_hosts[0]
+    - name: Setando Flannel
+      shell: 'kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml'
+      when: inventory_hostname == play_hosts[0]
+    - name: Conectando nodes a master
+      shell: 
+        cmd: |
+         "sudo {{  join_hash.stdout_lines[70] | regex_replace('[\\r\\n\\t]+','') }}"
+         "{{  join_hash.stdout_lines[71] | regex_replace('[\\r\\n\\t]+','') }}"
+      when: inventory_hostname == play_hosts[1] or inventory_hostname == play_hosts[2]
+    - name: "Altera o kubeconfig para o host publico"
+      when: inventory_hostname == play_hosts[0]
+      become: yes
+      become_user: root
+      tags: kubeconfig
+      lineinfile:
+        path: .kube/config
+        regexp: "^(.*)server: https(.*)$" 
+        line: "    server: https://{{play_hosts[0]}}:6443"
+        backrefs: yes 
+      register: kubeconfig
+    - debug:
+        var: kubeconfig
