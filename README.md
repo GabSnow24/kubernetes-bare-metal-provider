@@ -12,6 +12,12 @@ The main objective of this project is provide a complex construction of naked Ku
 
 For now, we have to do some manually work, but we're seek improvement in every task that 
 the project have to do. We support only AWS resources for now. 
+After all, we'll leave here two important installation guides for Terraform and Ansible: 
+
+- Terraform: https://learn.hashicorp.com/tutorials/terraform/install-cli
+
+- Ansible: https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
+
 
 First, we gonna provide three Elastic IP's addresses in AWS for the K8S nodes (you can see here
 https://www.youtube.com/watch?v=h-yOoHbH_Dw). After that, we gonna take that EIP's info and fill the fields
