@@ -31,7 +31,7 @@ in hosts.yml and vars in the section of provided EIP's. After that you can run t
 
 After the terraform provided the cloud infraestructure, we can run the Ansible to config the machines by running:
 
-- ansible-playbook playbook.yml --private-key <yourprivatekey> -i hosts.yml -u ec2-user
+- ansible-playbook playbook.yml --private-key yourprivatekey -i hosts.yml -u ec2-user
 
 After running the command and everything going right, you need copy an especifically part of ansible command line output.
 
