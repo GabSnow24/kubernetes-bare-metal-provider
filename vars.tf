@@ -15,12 +15,12 @@ variable "eips" {
   }
 }
 
-variable "cdirs_acesso_remoto" {
+variable "cidrs_acesso_remoto" {
   type = list
   default = ["#youriphost/32" ]
 }
 
-variable "cdirs_acesso-http" {
+variable "cidrs_acesso-http" {
   type = list
   default = ["0.0.0.0/0" ]
 }
