@@ -10,8 +10,8 @@ The main objective of this project is provide a complex construction of naked Ku
 
 # How it work
 
-For now, we have to do some manually work, but we're seek improvement in every task that 
-the project have to do. We support only AWS resources for now. 
+For now, we have to do some manually work, but we're seek improvement in every objective of functionality that 
+the project have. We support only AWS resources for now. 
 After all, we'll leave here two important installation guides for Terraform and Ansible: 
 
 - Terraform: https://learn.hashicorp.com/tutorials/terraform/install-cli
